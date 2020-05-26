@@ -1,0 +1,51 @@
+insert into tag_tbl (tag_id, name) values ('1', '管理部');
+insert into tag_tbl (tag_id, name) values ('2', '開発部');
+insert into tag_tbl (tag_id, name) values ('3', '営業部');
+insert into tag_tbl (tag_id, name) values ('4', '消耗品');
+insert into tag_tbl (tag_id, name) values ('5', '図書');
+
+insert into position_tbl (position_id, name) values ('1', 'キャビネットA');
+insert into position_tbl (position_id, name) values ('2', 'キャビネットB');
+insert into position_tbl (position_id, name) values ('3', '会議室A');
+insert into position_tbl (position_id, name) values ('4', '会議室B');
+insert into position_tbl (position_id, name) values ('5', '事務室');
+insert into position_tbl (position_id, name) values ('6', '開発室');
+
+insert into item_tbl (item_id, name, position_id, description) values ('1', 'PC-1', '5', 'Ａさん利用中');
+insert into item_tbl (item_id, name, position_id, description) values ('2', 'PC-2', '5', 'Ｂさん利用中');
+insert into item_tbl (item_id, name, position_id, description) values ('3', 'PC-3', '6', 'Ｃさん利用中');
+insert into item_tbl (item_id, name, position_id, description) values ('4', 'PC-4', '6', 'Ｄさん利用中');
+insert into item_tbl (item_id, name, position_id, description) values ('5', '電源タップ-1', '1', '6個口');
+insert into item_tbl (item_id, name, position_id, description) values ('6', '電源タップ-2', '5', '8個口');
+insert into item_tbl (item_id, name, position_id, description) values ('7', '電源タップ-3', '6', '8個口');
+insert into item_tbl (item_id, name, position_id, description) values ('8', 'CD-Rメディア', '2', '利用する場合は要申請');
+insert into item_tbl (item_id, name, position_id, description) values ('9', 'DVD-Rメディア', '2', '利用する場合は要申請');
+insert into item_tbl (item_id, name, position_id, description) values ('10', 'ホワイトボード1', '4', '');
+insert into item_tbl (item_id, name, position_id, description) values ('11', '技術書１', '6', 'プログラミング初心者向け');
+insert into item_tbl (item_id, name, position_id, description) values ('12', '資格取得参考書', '6', '');
+insert into item_tbl (item_id, name, position_id, description) values ('13', '技術書２', '6', '');
+insert into item_tbl (item_id, name, position_id, description) values ('14', 'ホワイトボード2', '6', '');
+insert into item_tbl (item_id, name, position_id, description) values ('15', '使い捨てマスク', '2', '使用するときは管理部まで');
+
+
+insert into item_tag_tbl (item_id, tag_id) values ('1', '1');
+insert into item_tag_tbl (item_id, tag_id) values ('2', '3');
+insert into item_tag_tbl (item_id, tag_id) values ('3', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('4', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('5', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('6', '1');
+insert into item_tag_tbl (item_id, tag_id) values ('7', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('8', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('8', '4');
+insert into item_tag_tbl (item_id, tag_id) values ('9', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('9', '4');
+insert into item_tag_tbl (item_id, tag_id) values ('10', '3');
+insert into item_tag_tbl (item_id, tag_id) values ('11', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('11', '5');
+insert into item_tag_tbl (item_id, tag_id) values ('12', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('12', '5');
+insert into item_tag_tbl (item_id, tag_id) values ('13', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('13', '5');
+insert into item_tag_tbl (item_id, tag_id) values ('14', '2');
+insert into item_tag_tbl (item_id, tag_id) values ('15', '1');
+insert into item_tag_tbl (item_id, tag_id) values ('15', '4');

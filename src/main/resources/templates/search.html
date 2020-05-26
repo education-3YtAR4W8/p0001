@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ja" xml:lang="ja" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="with=device-width, initial-scale=1, shrink-to-fit=no">
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <title>
+            検索:オフィス備品管理
+        </title>
+    </head>
+    <body>
+        <div class="container">
+            <h1>
+                検索
+            </h1>
+            <div class="row">
+                <form method="get" action="search">
+                    <div class="form-group">
+                        <label for="key">検索文字列</label>
+                        <input type="text" class="form-control" id="key" name="key" th:value="${page.searchText}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <div class="mx-2">
+                            検索
+                        </div>
+                    </button>
+                </form>
+            </div>
+
+            <th:block th:if="${!#lists.isEmpty(page.items)}">
+                <hr>
+                <div class="row">
+                    <div class="col">
+                        名称
+                    </div>
+                    <div class="col">
+                        場所
+                    </div>
+                    <div class="col">
+                        タグ
+                    </div>
+                    <div class="col">
+                        説明
+                    </div>
+                </div>
+                <div th:each="item : ${page.items}" class="row border-top">
+                    <div class="col" th:text="${item.name}"></div>
+                    <div class="col" th:text="${item.position}"></div>
+                    <div class="col" th:text="${#strings.listJoin(item.tags, ', ')}"></div>
+                    <div class="col" th:text="${item.description}"></div>
+                </div>
+            </th:block>
+        </div>
+    </body>
+</html>
