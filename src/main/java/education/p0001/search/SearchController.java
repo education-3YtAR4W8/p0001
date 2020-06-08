@@ -64,7 +64,7 @@ public class SearchController {
             }
         }
 
-        for(Tag tag :tagList){
+        for(Tag tag : tagList){
             if(tag.getName().contains(text)){
                 for(ItemTag itemTag : itemTagList){
                     if(itemTag.getTagId().equals(tag.getTagId())){
