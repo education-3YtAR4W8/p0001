@@ -14,6 +14,7 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -45,17 +46,63 @@ public class SearchController {
     }
 
     List<SearchedItem> getSearchedItems(String text) {
-        // TODO: このメソッドを実装してください。
-        // 1. 入力文字列で絞り込んだSearchedItemのリストを返す
-        //   SearchedItem (
-        //     name        -> item_tbl.name
-        //     position    -> position_tbl.name
-        //     tags        -> tag_tbl.nameのリスト
-        //     description -> item_tbl.description
-        //   )
-        // 2. 絞り込み条件はitem_tbl.name, item_tbl.description, tag_tbl.name, position_tbl.nameに対し1つでも入力textが部分一致するもの
-        // 3. コーディングの学習のため、sqlで絞り込まない。用意されているdaoメソッドを使用すること
-        return new ArrayList<>();
+        // 使用するレコードを取得します。Listだと検索に不向きなので、Mapにしておきます
+        Map<String, Position> positionMap = positionDao.selectAll().stream()
+                .collect(Collectors.toMap(it -> it.getPositionId(), it -> it));
+        Map<String, Tag> tagMap = tagDao.selectAll().stream()
+                .collect(Collectors.toMap(it -> it.getTagId(), it -> it));
+        Map<String, List<ItemTag>> mappedItemTagsByItemId = itemTagDao.selectAll().stream()
+                .collect(Collectors.groupingBy(it -> it.getItemId()));
+
+        // 検索ヒットする場所とタグを絞り込んでおきます
+        Set<String> filteredPositionIds = positionMap.values().stream()
+                .filter(it -> it.getName().contains(text))
+                .map(it -> it.getPositionId())
+                .collect(Collectors.toSet());
+        Set<String> filteredTagIds = tagMap.values().stream()
+                .filter(it -> it.getName().contains(text))
+                .map(it -> it.getTagId())
+                .collect(Collectors.toSet());
+
+        // 検索ヒットした場合にtrueを返す関数を用意します
+        Predicate<Item> hit = (item) -> {
+            if (item.getName().contains(text)) {
+                return true;
+            }
+            if (item.getDescription().contains(text)) {
+                return true;
+            }
+            if (filteredPositionIds.contains(item.getPositionId())) {
+                return true;
+            }
+            if (mappedItemTagsByItemId.get(item.getItemId()).stream()
+                    .anyMatch(itemTag -> filteredTagIds.contains(itemTag.getTagId()))) {
+                return true;
+            }
+            return false;
+        };
+
+        // すべての備品から検索ヒットするものを収集します
+        return itemDao.selectAll().stream()
+                .filter(hit)
+                .map(item -> {
+                    String positionName = Optional.ofNullable(positionMap.get(item.getPositionId()))
+                            .orElseThrow(() -> new RuntimeException("データ不整合です。備品に紐づく場所が存在しません。"))
+                            .getName();
+                    List<String> tagNames = mappedItemTagsByItemId.get(item.getItemId()).stream()
+                            .map(it -> Optional.ofNullable(tagMap.get(it.getTagId()))
+                                    .orElseThrow(() -> new RuntimeException("データ不整合です。備品に紐づくタグが存在しません。"))
+                                    .getName())
+                            .collect(Collectors.toList());
+
+                    return new SearchedItem(
+                            item.getName(),
+                            positionName,
+                            tagNames,
+                            item.getDescription()
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     @Getter
