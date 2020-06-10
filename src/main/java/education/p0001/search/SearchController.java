@@ -56,7 +56,6 @@ public class SearchController {
         // 2. 絞り込み条件はitem_tbl.name, item_tbl.description, tag_tbl.name, position_tbl.nameに対し1つでも入力textが部分一致するもの
         // 3. コーディングの学習のため、sqlで絞り込まない。用意されているdaoメソッドを使用すること
         Set<String> itemIds = new HashSet<>();
-//        Set<SearchedItem> searchedItems = new HashSet<>();
         List<SearchedItem> searchedItems = new ArrayList<>();
         List<Item> items = itemDao.selectAll();
         List<Tag> tags = tagDao.selectAll();
@@ -65,8 +64,6 @@ public class SearchController {
 
         for (Item item : items) {
             if (item.getName().matches(".*" + text + ".*") || item.getDescription().matches(".*" + text + ".*")) {
-//                SearchedItem searchedItem = new SearchedItem(item.getName(), getPositionName(positions, item.getPositionId()), getTags(itemTags, tags, item.getItemId()), item.getDescription());
-//                searchedItems.add(searchedItem);
                 itemIds.add(item.getItemId());
             }
         }
@@ -75,8 +72,6 @@ public class SearchController {
             if (position.getName().matches(".*" + text + ".*")) {
                 for (Item item : items) {
                     if (item.getPositionId().equals(position.getPositionId())) {
-//                        SearchedItem searchedItem = new SearchedItem(item.getName(), position.getName(), getTags(itemTags, tags, item.getItemId()), item.getDescription());
-//                        searchedItems.add(searchedItem);
                         itemIds.add(item.getItemId());
                     }
                 }
