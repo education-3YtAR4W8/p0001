@@ -55,6 +55,29 @@ public class SearchController {
         //   )
         // 2. 絞り込み条件はitem_tbl.name, item_tbl.description, tag_tbl.name, position_tbl.nameに対し1つでも入力textが部分一致するもの
         // 3. コーディングの学習のため、sqlで絞り込まない。用意されているdaoメソッドを使用すること
+
+        Map<String, String> dataMap = new HashMap<>();
+
+        List<Item> itemLVal = itemDao.selectAll();
+        List<ItemTag> itemTagVal = itemTagDao.selectAll();
+        List<Position> positionVal = positionDao.selectAll();
+        List<Tag> tagVal = tagDao.selectAll();
+
+        for(Tag tag : tagVal) {
+            if(tag.getName().contains(text)){
+                dataMap.put(tag.getTagId(), tag.getName());
+            }
+        }
+
+        for(Item item : itemLVal) {
+            if(item.getName().contains(text)){
+                dataMap.put(item.getItemId(), item.getName());
+            }
+         }
+        System.out.println(dataMap);
+
+
+
         return new ArrayList<>();
     }
 
