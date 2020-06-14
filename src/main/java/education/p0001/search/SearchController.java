@@ -78,7 +78,7 @@ public class SearchController {
         }
 
         // すべての備品から検索ヒットするものを収集します
-        List<SearchedItem> filteredSearchedItemList = new ArrayList<>();
+        List<SearchedItem> SearchedItemList = new ArrayList<>();
         for (Item item : itemDao.selectAll()) {
             boolean hit = false;
             if (item.getName().contains(text)) {
@@ -115,7 +115,7 @@ public class SearchController {
                     }
                 }
 
-                filteredSearchedItemList.add(
+                SearchedItemList.add(
                         new SearchedItem(
                                 item.getName(),
                                 positionName,
@@ -127,7 +127,7 @@ public class SearchController {
 
         }
 
-        return filteredSearchedItemList;
+        return SearchedItemList;
     }
 
 
