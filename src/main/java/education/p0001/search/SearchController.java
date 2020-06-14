@@ -47,63 +47,90 @@ public class SearchController {
 
     List<SearchedItem> getSearchedItems(String text) {
         // 使用するレコードを取得します。Listだと検索に不向きなので、Mapにしておきます
-        Map<String, Position> positionMap = positionDao.selectAll().stream()
-                .collect(Collectors.toMap(it -> it.getPositionId(), it -> it));
-        Map<String, Tag> tagMap = tagDao.selectAll().stream()
-                .collect(Collectors.toMap(it -> it.getTagId(), it -> it));
-        Map<String, List<ItemTag>> mappedItemTagsByItemId = itemTagDao.selectAll().stream()
-                .collect(Collectors.groupingBy(it -> it.getItemId()));
+        Map<String, Position> positionMap = new HashMap<>();
+        for (Position position : positionDao.selectAll()) {
+            positionMap.put(position.getPositionId(), position);
+        }
+        Map<String, Tag> tagMap = new HashMap<>();
+        for (Tag tag : tagDao.selectAll()) {
+            tagMap.put(tag.getTagId(), tag);
+        }
+        Map<String, List<ItemTag>> mappedItemTagListByItemId = new HashMap<>();
+        for (ItemTag itemTag : itemTagDao.selectAll()) {
+            if (!mappedItemTagListByItemId.containsKey(itemTag.getItemId())) {
+                mappedItemTagListByItemId.put(itemTag.getItemId(), new ArrayList<>());
+            }
+            mappedItemTagListByItemId.get(itemTag.getItemId()).add(itemTag);
+        }
 
         // 検索ヒットする場所とタグを絞り込んでおきます
-        Set<String> filteredPositionIds = positionMap.values().stream()
-                .filter(it -> it.getName().contains(text))
-                .map(it -> it.getPositionId())
-                .collect(Collectors.toSet());
-        Set<String> filteredTagIds = tagMap.values().stream()
-                .filter(it -> it.getName().contains(text))
-                .map(it -> it.getTagId())
-                .collect(Collectors.toSet());
-
-        // 検索ヒットした場合にtrueを返す関数を用意します
-        Predicate<Item> hit = (item) -> {
-            if (item.getName().contains(text)) {
-                return true;
+        Set<String> filteredPositionIdSet = new HashSet<>();
+        for (Position position : positionMap.values()) {
+            if (position.getName().contains(text)) {
+                filteredPositionIdSet.add(position.getPositionId());
             }
-            if (item.getDescription().contains(text)) {
-                return true;
+        }
+        Set<String> filteredTagIdSet = new HashSet<>();
+        for (Tag tag: tagMap.values()) {
+            if (tag.getName().contains(text)) {
+                filteredTagIdSet.add(tag.getTagId());
             }
-            if (filteredPositionIds.contains(item.getPositionId())) {
-                return true;
-            }
-            if (mappedItemTagsByItemId.get(item.getItemId()).stream()
-                    .anyMatch(itemTag -> filteredTagIds.contains(itemTag.getTagId()))) {
-                return true;
-            }
-            return false;
-        };
+        }
 
         // すべての備品から検索ヒットするものを収集します
-        return itemDao.selectAll().stream()
-                .filter(hit)
-                .map(item -> {
-                    String positionName = Optional.ofNullable(positionMap.get(item.getPositionId()))
-                            .orElseThrow(() -> new RuntimeException("データ不整合です。備品に紐づく場所が存在しません。"))
-                            .getName();
-                    List<String> tagNames = mappedItemTagsByItemId.get(item.getItemId()).stream()
-                            .map(it -> Optional.ofNullable(tagMap.get(it.getTagId()))
-                                    .orElseThrow(() -> new RuntimeException("データ不整合です。備品に紐づくタグが存在しません。"))
-                                    .getName())
-                            .collect(Collectors.toList());
+        List<SearchedItem> filteredSearchedItemList = new ArrayList<>();
+        for (Item item : itemDao.selectAll()) {
+            boolean hit = false;
+            if (item.getName().contains(text)) {
+                hit = true;
+            }
+            if (!hit && item.getDescription().contains(text)) {
+                hit = true;
+            }
+            if (!hit && filteredPositionIdSet.contains(item.getPositionId())) {
+                hit = true;
+            }
+            if (!hit) {
+                if (mappedItemTagListByItemId.containsKey(item.getItemId())) {
+                    for (ItemTag itemTag : mappedItemTagListByItemId.get(item.getItemId())) {
+                        if (filteredTagIdSet.contains(itemTag.getTagId())) {
+                            hit = true;
+                            break;
+                        }
+                    }
+                }
+            }
 
-                    return new SearchedItem(
-                            item.getName(),
-                            positionName,
-                            tagNames,
-                            item.getDescription()
-                    );
-                })
-                .collect(Collectors.toList());
+            if (hit) {
+                String positionName = "";
+                if (positionMap.containsKey(item.getPositionId())) {
+                    positionName = positionMap.get(item.getPositionId()).getName();
+                }
+                List<String> tagNames = new ArrayList<>();
+                if (mappedItemTagListByItemId.containsKey(item.getItemId())) {
+                    for (ItemTag itemTag : mappedItemTagListByItemId.get(item.getItemId())) {
+                        if (tagMap.containsKey(itemTag.getTagId())) {
+                            tagNames.add(tagMap.get(itemTag.getTagId()).getName());
+                        }
+                    }
+                }
+
+                filteredSearchedItemList.add(
+                        new SearchedItem(
+                                item.getName(),
+                                positionName,
+                                tagNames,
+                                item.getDescription()
+                        )
+                );
+            }
+
+        }
+
+        return filteredSearchedItemList;
     }
+
+
 
     @Getter
     @Setter
