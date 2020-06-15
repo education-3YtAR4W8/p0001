@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -67,44 +68,49 @@ public class SearchController {
                 .collect(Collectors.toSet());
 
         // すべての備品から検索ヒットするものを収集します
-        return itemDao.selectAll().stream()
-                .filter(item -> {
-                    if (item.getName().contains(text)) {
-                        return true;
-                    }
-                    if (item.getDescription().contains(text)) {
-                        return true;
-                    }
-                    if (filteredPositionIdSet.contains(item.getPositionId())) {
-                        return true;
-                    }
-                    if (mappedItemTagListByItemId.containsKey(item.getItemId())) {
-                        if (mappedItemTagListByItemId.get(item.getItemId())
-                                .stream()
-                                .anyMatch(it -> filteredTagIdSet.contains(it.getTagId()))) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }).map(item -> {
-                    String positionName = Optional.of(positionMap.get(item.getPositionId()))
-                            .orElseThrow(() -> new RuntimeException("データ不整合です。備品に紐づく場所が存在しません。"))
-                            .getName();
-                    List<String> tagNames = Optional.of(mappedItemTagListByItemId.get(item.getItemId()))
-                            .orElse(new ArrayList<>())
-                            .stream()
-                            .map(it -> Optional.of(tagMap.get(it.getTagId()))
-                                    .orElseThrow(() -> new RuntimeException("データ不整合です。備品に紐づくタグが存在しません。"))
-                                    .getName())
-                            .collect(Collectors.toList());
+        Predicate<Item> hit = (item) -> {
+            if (item.getName().contains(text)) {
+                return true;
+            }
+            if (item.getDescription().contains(text)) {
+                return true;
+            }
+            if (filteredPositionIdSet.contains(item.getPositionId())) {
+                return true;
+            }
+            if (mappedItemTagListByItemId.containsKey(item.getItemId())) {
+                if (mappedItemTagListByItemId.get(item.getItemId())
+                        .stream()
+                        .anyMatch(it -> filteredTagIdSet.contains(it.getTagId()))) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        Function<Item, SearchedItem> createSearchedItem = (item) -> {
+            String positionName = Optional.of(positionMap.get(item.getPositionId()))
+                    .orElseThrow(() -> new RuntimeException("データ不整合です。備品に紐づく場所が存在しません。"))
+                    .getName();
+            List<String> tagNames = Optional.of(mappedItemTagListByItemId.get(item.getItemId()))
+                    .orElse(new ArrayList<>())
+                    .stream()
+                    .map(it -> Optional.of(tagMap.get(it.getTagId()))
+                            .orElseThrow(() -> new RuntimeException("データ不整合です。備品に紐づくタグが存在しません。"))
+                            .getName())
+                    .collect(Collectors.toList());
 
-                    return new SearchedItem(
-                            item.getName(),
-                            positionName,
-                            tagNames,
-                            item.getDescription()
-                    );
-                }).collect(Collectors.toList());
+            return new SearchedItem(
+                    item.getName(),
+                    positionName,
+                    tagNames,
+                    item.getDescription()
+            );
+        };
+        return itemDao.selectAll()
+                .stream()
+                .filter(hit)
+                .map(createSearchedItem)
+                .collect(Collectors.toList());
     }
 
     @Getter
